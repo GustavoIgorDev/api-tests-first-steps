@@ -1,9 +1,9 @@
 Given('the user consults the employee informations') do
-    @get_url = 'https://dummy.restapiexample.com/api/v1/employees'
+    @getlist = Employee_Requests.new
 end
 
 When('the user makes a search request') do
-    @list_employees = HTTParty.get(@get_url)
+    @list_employees = @getlist.find_employee
 end
 
 Then('a list of employees should be returned') do
@@ -12,64 +12,48 @@ Then('a list of employees should be returned') do
 end
 
 Given('the user registers a new employee') do
-    @post_url = 'https://dummy.restapiexample.com/api/v1/create'
+    @create = Employee_Requests.new
 end
 
 When('the user submits the employee details') do
-    @create_employee = HTTParty.post(@post_url, headers: { 'Content-Type' => 'application/json' }, body: {
-        "id": 30,
-        "employee_name": "Gus",
-        "employee_salary": 50000,
-        "employee_age": 30,
-        "profile_image": ""
-    }.to_json)
-
-    puts @create_employee
+    @create_employee = @create.create_employee(DATABASE[:name][:name1], DATABASE[:salary][:salary1], DATABASE[:age][:age1])
+    puts(@create_employee)
 end
 
 Then('the employee should be created successfully') do
     expect(@create_employee.code).to eql 200
     expect(@create_employee.message).to eql 'OK'
-    expect(@create_employee['data']['employee_name']).to eql 'Gus'
+    expect(@create_employee['data']['employee_name']).to eql DATABASE[:name][:name1]
     expect(@create_employee["status"]).to eql 'success'
-    expect(@create_employee['data']['employee_salary']).to eql (50000)
-    expect(@create_employee['data']['employee_age']).to eql (30)
+    expect(@create_employee['data']['employee_salary']).to eql DATABASE[:salary][:salary1]
+    expect(@create_employee['data']['employee_age']).to eql DATABASE[:age][:age1]
 end
 
 
 Given('the user updates an existing employees information')do
-    @get_employee = HTTParty.get('https://dummy.restapiexample.com/api/v1/employees', :headers => {'Content-Type': 'application/json'})
-    @put_url = 'https://dummy.restapiexample.com/api/v1/update/' + @get_employee['data'][0]['id'].to_s
+    @request = Employee_Requests.new
 end
  
 When('the user modifies the employee details') do
-    @update_employee = HTTParty.put(@put_url, :headers => { 'Content-Type': 'application/json' }, body: {
-        "employee_name": "Gas",
-        "employee_salary": 12030,
-        "employee_age": 21,
-        "profile_image": ""
-    }.to_json) 
-
+    @update_employee = @request.update_employee(@request.find_employee['data'][0]['id'], DATABASE[:name][:name2], DATABASE[:salary][:salary2], DATABASE[:age][:age2])
     puts(@update_employee)
 end
 
 Then('the employee information should be updated successfully') do
     expect(@update_employee.code).to eql 200
     expect(@update_employee.message).to eql 'OK'
-    expect(@update_employee['data']['employee_name']).to eql 'Gas'
+    expect(@update_employee['data']['employee_name']).to eql DATABASE[:name][:name2]
     expect(@update_employee["status"]).to eql 'success'
-    expect(@update_employee['data']['employee_salary']).to eql (12030)
-    expect(@update_employee['data']['employee_age']).to eql (21)
+    expect(@update_employee['data']['employee_salary']).to eql DATABASE[:salary][:salary2]
+    expect(@update_employee['data']['employee_age']).to eql DATABASE[:age][:age2]
 end
 
 Given('the user wants to delete an existing employee') do
-    @get_employee = HTTParty.get('https://dummy.restapiexample.com/api/v1/employees', :headers => {'Content-Type': 'application/json'})
-    @delete_url = 'https://dummy.restapiexample.com/api/v1/delete/' + @get_employee['data'][0]['id'].to_s
+    @request = Employee_Requests.new
 end
 
 When('the user sends the id') do
-    @delete_employee = HTTParty.delete(@delete_url, :headers => { 'Content-Type': 'application/json' })
-    puts(@delete_employee)
+    @delete_employee = @request.delete_employee(@request.find_employee['data'][0]['id'])
 end
 
 Then('the employee should be deleted successfully') do       
